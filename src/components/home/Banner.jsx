@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/refs */
+
 "use client";
 
 import React, { useCallback, useEffect, useState, useRef } from "react";
@@ -8,19 +9,18 @@ import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const banners = [
-  "https://rokbucket.rokomari.io/banner/DESKTOPceb599bd-9932-4da0-ab50-b266d1040886.webp",
-  "https://rokbucket.rokomari.io/banner/DESKTOPf960b78c-d644-48df-bd74-59e6a9ee26ab.webp",
-  "https://rokbucket.rokomari.io/banner/DESKTOPaf98bf29-bebb-4e15-8f43-9e8cc1ae9709.webp",
-  "https://rokbucket.rokomari.io/banner/DESKTOP9ee36a83-2e63-4e52-ae52-d32c9fecc82a.webp",
-  "https://rokbucket.rokomari.io/banner/DESKTOP71460507-15a8-43b0-b114-6f81db1c6dca.webp",
-  "https://rokbucket.rokomari.io/banner/DESKTOP8247e6d2-7630-4c09-9dd6-ce4efe30c187.webp",
-  "https://rokbucket.rokomari.io/banner/DESKTOP8ce432e2-1f36-4d7e-b94c-90bb05c499d6.webp",
+  "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1400&q=80", // Train
+  "https://images.pexels.com/photos/9244269/pexels-photo-9244269.jpeg?auto=compress&cs=tinysrgb&w=1400", // Launch / Ferry
+  "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=1400q=80", // Luxury Bus
+  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80", // Airplane
+  "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=1400&q=80", // Highway Bus
+  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80", // Night Bus
 ];
 
 export default function BannerSlider() {
   const autoplay = useRef(
     Autoplay({
-      delay: 4000,
+      delay: 3000,
       stopOnInteraction: false,
       stopOnMouseEnter: true,
     }),
@@ -29,7 +29,6 @@ export default function BannerSlider() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     autoplay.current,
   ]);
-
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const onSelect = useCallback(() => {
@@ -39,43 +38,54 @@ export default function BannerSlider() {
 
   useEffect(() => {
     if (!emblaApi) return;
-
     onSelect();
     emblaApi.on("select", onSelect);
-
-    return () => {
-      emblaApi.off("select", onSelect);
-    };
+    return () => emblaApi.off("select", onSelect);
   }, [emblaApi, onSelect]);
 
   return (
-    <div className="relative overflow-hidden rounded-3xl mt-3" ref={emblaRef}>
+    <div
+      className="relative overflow-hidden rounded-3xl shadow-lg"
+      ref={emblaRef}
+    >
       <div className="flex">
         {banners.map((banner, index) => (
           <div key={index} className="relative min-w-0 flex-[0_0_100%]">
             <img
               src={banner}
               alt={`Banner ${index + 1}`}
-              className="w-full object-cover"
+              className="h-[280px] w-full object-cover sm:h-[360px] md:h-[420px] lg:h-[480px]"
               loading={index === 0 ? "eager" : "lazy"}
             />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           </div>
         ))}
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Buttons */}
       <button
         onClick={() => emblaApi?.scrollPrev()}
-        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg"
+        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full 
+             bg-white/90 dark:bg-zinc-800/90 
+             text-zinc-800 dark:text-white
+             p-2.5 shadow-lg transition 
+             hover:bg-white dark:hover:bg-zinc-700 
+             sm:left-5 sm:p-3"
       >
-        <ChevronLeft/>
+        <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
       </button>
 
       <button
         onClick={() => emblaApi?.scrollNext()}
-        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg"
+        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full 
+             bg-white/90 dark:bg-zinc-800/90 
+             text-zinc-800 dark:text-white
+             p-2.5 shadow-lg transition 
+             hover:bg-white dark:hover:bg-zinc-700 
+             sm:right-5 sm:p-3"
       >
-        <ChevronRight/>
+        <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
       </button>
 
       {/* Dots */}
@@ -84,7 +94,7 @@ export default function BannerSlider() {
           <button
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
-            className={`h-2.5 rounded-full transition-all ${
+            className={`h-2.5 rounded-full transition-all duration-300 ${
               selectedIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/50"
             }`}
           />

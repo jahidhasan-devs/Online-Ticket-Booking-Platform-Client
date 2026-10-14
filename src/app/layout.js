@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import NestThemeProvider from "@/providers/NextThemeToggle";
 
+
 const inter = Inter({
   subsets: ["latin"],
 });

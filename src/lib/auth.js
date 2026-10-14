@@ -1,9 +1,60 @@
+// // import dns from "node:dns";
+// // dns.setServers(["1.1.1.1", "1.0.0.1"]);
+
+// import { betterAuth } from "better-auth";
+// import { MongoClient } from "mongodb";
+// import { mongodbAdapter } from "better-auth/adapters/mongodb";
+// import { jwt } from "better-auth/plugins";
+
+// const client = new MongoClient(process.env.MONGODB_URI);
+// const db = client.db("ticket-booking-platform");
+
+// export const auth = betterAuth({
+//   database: mongodbAdapter(db, {
+//     client,
+//   }),
+//   emailAndPassword: {
+//     enabled: true,
+//   },
+//   socialProviders: {
+//     google: {
+//       clientId: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//     },
+//   },
+//   user: {
+//     additionalFields: {
+//       role: {
+//         defaultValue: "buyer", //seller, admin
+//       },
+//       plan: {
+//         defaultValue: "free",
+//       },
+//     },
+//   },
+//   session: {
+//     cookieCache: {
+//       enabled: true,
+//       strategy: "jwt",
+//       maxAge: 60 * 24 * 30,
+//     },
+//   },
+
+//   plugins: [jwt()],
+// });
+
+
+
+
+
+
 // import dns from "node:dns";
 // dns.setServers(["1.1.1.1", "1.0.0.1"]);
 
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
+// ✅ সঠিক প্যাকেজ থেকে ইম্পোর্ট করা হয়েছে
+import { mongodbAdapter } from "@better-auth/mongo-adapter"; 
 import { jwt } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGODB_URI);
@@ -25,19 +76,22 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        defaultValue: "buyer", //seller, admin
+        type: "string",
+        defaultValue: "buyer", // seller, admin, buyer
       },
       plan: {
+        type: "string",
         defaultValue: "free",
       },
     },
   },
   session: {
+    // ✅ cookieCache এর ভেতরে strategy: "jwt" বাদ দেওয়া হয়েছে
     cookieCache: {
       enabled: true,
-      strategy: "jwt",
-      maxAge: 60 * 24 * 30,
+      maxAge: 5 * 60, // ৫ মিনিট (বা আপনার প্রয়োজন অনুযায়ী সেকেন্ডে দিন)
     },
+    expiresIn: 60 * 60 * 24 * 30, // ৩০ দিনের সেশন মেয়ার
   },
 
   plugins: [jwt()],
