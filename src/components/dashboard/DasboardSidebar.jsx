@@ -13,31 +13,31 @@ export default function DashboardLayout({ children, userRole, userData }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const role = userRole || "buyer";
-  console.log(role)
+  // console.log(role);
 
   // Navigation Items Routing Map
   const dashboardItems = {
-    seller: [
-      { icon: User2, label: "Vendor Profile", link: "/dashboard/seller" },
+    vendor: [
+      { icon: User2, label: "Vendor Profile", link: "/dashboard/vendor" },
       {
         icon: TbAsset,
         label: "Add Ticket",
-        link: "/dashboard/seller",
+        link: "/dashboard/vendor/add-ticket",
       },
       {
         icon: TbSquaresSelected,
         label: "My Added Tickets",
-        link: "/dashboard/seller/tickets",
+        link: "/dashboard/vendor/tickets",
       },
       {
         icon: BiMoney,
         label: "Requested Bookings",
-        link: "/dashboard/seller/requests",
+        link: "/dashboard/vendor/requests",
       },
       {
         icon: ChartAreaIcon,
         label: "Revenue Overview",
-        link: "/dashboard/seller/revenue",
+        link: "/dashboard/vendor/revenue",
       },
     ],
 
@@ -189,7 +189,6 @@ export default function DashboardLayout({ children, userRole, userData }) {
               alt="Logo"
             />
             <div>
-           
               <p className="text-xs text-default-400 capitalize">
                 {role} Panel
               </p>

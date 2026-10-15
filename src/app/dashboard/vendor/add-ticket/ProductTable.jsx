@@ -1,7 +1,8 @@
 import {Pagination, Table} from "@heroui/react";
 import Link from "next/link";
 
-export default function ProductTable({productsData}) {
+export default function ProductTable({productsData=[]}) {
+  console.log("check data",productsData);
  const products = productsData.data;
  const page = productsData.page;
  const pages = []
