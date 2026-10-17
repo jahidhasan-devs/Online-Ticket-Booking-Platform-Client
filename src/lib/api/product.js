@@ -21,7 +21,7 @@ export const getProduct = async (page) => {
 
 
 
-export const getAllProducts = async (search) => {
+export const getAllTicket = async (search) => {
   const res = await fetch(`${baseURl}/products?search=${search}`);
   const data = await res.json();
 
@@ -31,7 +31,7 @@ export const getAllProducts = async (search) => {
 
 
 
-export const getProductById = async (id) => {
+export const getTicketById = async (id) => {
   const res = await fetch(`${baseURl}/product/${id}`);
   const data = await res.json();
   return data;

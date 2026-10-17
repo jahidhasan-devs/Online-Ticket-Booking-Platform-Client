@@ -32,8 +32,9 @@ import {
   Store,
   Layers,
 } from "lucide-react";
-import { addProduct } from "@/lib/action/products";
+
 import { imageUpload } from "@/lib/imgUpload";
+import { addTicket } from "@/lib/action/products";
 
 // Supported transport categories with matching styles & fallback photos
 const TRANSPORT_CONFIG = {
@@ -162,8 +163,9 @@ export default function AddTicketForm({ user }) {
         status: "pending",
       };
 
-      const result = await addProduct(ticketPayload);
+      const result = await addTicket(ticketPayload);
       console.log("Ticket created successfully:", result);
+      console.log(result);
 
       setStatusMessage({
         type: "success",

@@ -3,18 +3,17 @@ import { getTokenServer } from "../getTokenServer";
 
 const baseURl = process.env.NEXT_PUBLIC_SERVER_URL;
 
-export const addProduct = async (product) => {
-  const token = await getTokenServer()
-  
+export const addTicket = async (ticketPayload) => {
+  const token = await getTokenServer();
 
-  const res = await fetch(`${baseURl}/seller/products`, {
+  const res = await fetch(`${baseURl}/vendor/tickets`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       authorization: `Bearer ${token}`,
     },
 
-    body: JSON.stringify(product),
+    body: JSON.stringify(ticketPayload),
   });
 
   const data = await res.json();

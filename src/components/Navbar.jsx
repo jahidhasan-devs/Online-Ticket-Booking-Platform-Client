@@ -87,7 +87,7 @@ const Navbar = () => {
             </li>
             <li>
               <Link
-                href="/products"
+                href="/tickets"
                 className="font-medium text-foreground hover:text-accent transition-colors"
               >
                 All Tickets

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation"; // ← এইটা যোগ করো
 import { User2, User2Icon, ChartArea, ChartAreaIcon } from "lucide-react";
 import { BiMoney } from "react-icons/bi";
 import { TbAsset, TbAssetFilled, TbSquaresSelected } from "react-icons/tb";
@@ -11,11 +12,11 @@ import { Button } from "@heroui/react";
 
 export default function DashboardLayout({ children, userRole, userData }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname(); // ← current route
 
   const role = userRole || "buyer";
-  // console.log(role);
 
-  // Navigation Items Routing Map
+  // Navigation Items Routing Map  (এটা change করো না)
   const dashboardItems = {
     vendor: [
       { icon: User2, label: "Vendor Profile", link: "/dashboard/vendor" },
@@ -73,12 +74,14 @@ export default function DashboardLayout({ children, userRole, userData }) {
 
   const navItems = dashboardItems[role] || dashboardItems.buyer;
 
+  // Active check
+  const isActive = (link) => pathname === link;
+
   return (
     <div className="min-h-screen bg-default-50/50 flex flex-col md:flex-row w-full relative">
       {/* ================= Mobile Header ================= */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 bg-background border-b border-default-200 sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-2 rounded-lg bg-default-100 hover:bg-default-200 text-foreground"
@@ -104,16 +107,14 @@ export default function DashboardLayout({ children, userRole, userData }) {
         </Link>
       </header>
 
-      {/* ================= Mobile Drawer Sidebar (Overlay) ================= */}
+      {/* ================= Mobile Drawer Sidebar ================= */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
 
-          {/* Drawer Content */}
           <div className="relative flex flex-col w-72 max-w-full bg-background h-full shadow-xl p-4 justify-between z-10">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-default-200 mb-4">
@@ -141,14 +142,28 @@ export default function DashboardLayout({ children, userRole, userData }) {
               <nav className="flex flex-col gap-1.5">
                 {navItems.map((item) => {
                   const ItemIcon = item.icon;
+                  const active = isActive(item.link);
+
                   return (
                     <Link
                       key={item.label}
                       href={item.link}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <div className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-default-700 hover:bg-primary/10 hover:text-primary">
-                        <ItemIcon className="w-5 h-5 text-default-500" />
+                      <div
+                        className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                          active
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-default-700 hover:bg-default-100 hover:text-foreground"
+                        }`}
+                      >
+                        <ItemIcon
+                          className={`w-5 h-5 ${
+                            active
+                              ? "text-primary-foreground"
+                              : "text-default-500"
+                          }`}
+                        />
                         <span>{item.label}</span>
                       </div>
                     </Link>
@@ -180,7 +195,7 @@ export default function DashboardLayout({ children, userRole, userData }) {
       {/* ================= Desktop Sidebar ================= */}
       <aside className="hidden md:flex flex-col w-64 bg-background border-r border-default-200 min-h-screen sticky top-0 h-screen justify-between p-4">
         <div className="flex flex-col gap-6">
-          <div className=" gap-3 px-2 py-1">
+          <div className="gap-3 px-2 py-1">
             <Image
               src="/logo.png"
               height={40}
@@ -198,10 +213,22 @@ export default function DashboardLayout({ children, userRole, userData }) {
           <nav className="flex flex-col gap-1.5">
             {navItems.map((item) => {
               const ItemIcon = item.icon;
+              const active = isActive(item.link);
+
               return (
                 <Link key={item.label} href={item.link}>
-                  <div className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-default-700 transition-all duration-200 hover:bg-primary/10 hover:text-primary">
-                    <ItemIcon className="w-5 h-5 text-default-500" />
+                  <div
+                    className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                      active
+                        ? "bg-blue-600 text-white font-semibold"
+                        : "text-default-700 hover:bg-default-100"
+                    }`}
+                  >
+                    <ItemIcon
+                      className={`w-5 h-5 ${
+                        active ? "text-white" : "text-default-500"
+                      }`}
+                    />
                     <span>{item.label}</span>
                   </div>
                 </Link>
@@ -240,11 +267,12 @@ export default function DashboardLayout({ children, userRole, userData }) {
               </p>
             </div>
             <Link
-              href="/"
-              className="hidden sm:flex items-center gap-2 text-sm text-default-600 hover:text-primary transition-colors"
+              href="/"             
             >
-              <House className="w-4 h-4" />
-              <span>Back to Home</span>
+              <Button className=" hidden sm:flex items-center gap-2 text-sm text-default-600 hover:text-primary transition-colors">
+                <House className="w-4 h-4" />
+                Back to Home
+              </Button>
             </Link>
           </div>
 

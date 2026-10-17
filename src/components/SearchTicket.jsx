@@ -2,7 +2,7 @@
 import { Button, Input } from "@heroui/react";
 import { redirect } from "next/navigation";
 
-const SearchProduct = () => {
+const SearchTicket = () => {
   const onSubmit = (e) => {
     e.preventDefault();
 
@@ -20,4 +20,4 @@ const SearchProduct = () => {
   );
 };
 
-export default SearchProduct;
+export default SearchTicket;

@@ -125,13 +125,13 @@ export default async function SellerDashboardHomepage() {
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Total Sales
               </p>
-              <h3 className="text-2xl font-bold mt-1">$12,480.00</h3>
+              <h3 className="text-2xl font-bold mt-1">৳ 12,480.00</h3>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
                 +14.2% from last month
               </p>
             </div>
             <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg">
-              <DollarSign className="w-6 h-6" />
+              <span className="w-6 h-6">৳</span>
             </div>
           </Card.Content>
         </Card>
