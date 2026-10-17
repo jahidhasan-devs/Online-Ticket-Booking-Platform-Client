@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createBooking } from "@/lib/action/booking";
 
 export default function TicketBookingSection({ ticket }) {
   const router = useRouter();
@@ -71,10 +72,12 @@ export default function TicketBookingSection({ ticket }) {
     e.preventDefault();
     setError("");
 
+    // Validation
     if (bookingQty < 1) {
       setError("Quantity must be at least 1");
       return;
     }
+
     if (bookingQty > ticket.quantity) {
       setError(`You can book maximum ${ticket.quantity} seats`);
       return;
@@ -83,22 +86,21 @@ export default function TicketBookingSection({ ticket }) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketId: ticket._id,
-          quantity: bookingQty,
-        }),
+      const result = await createBooking({
+        ticketId: ticket._id,
+        quantity: Number(bookingQty),
+        status: "Pending", // requirement: status = "Pending"
+        // backend will automatically add userId: req.user.id
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Booking failed");
+      if (!result.success) {
+        throw new Error(result.message || "Booking failed");
       }
 
+      // Success
       setIsModalOpen(false);
       router.push("/my-bookings");
+      alert("Successfully Booked just wait for confirmation") // My Booked Tickets page
       router.refresh();
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
@@ -133,7 +135,7 @@ export default function TicketBookingSection({ ticket }) {
       <button
         onClick={handleBookNow}
         disabled={isBookDisabled}
-        className={`w-full py-3.5 px-6 rounded-xl font-semibold text-white transition-all duration-200 ${
+        className={`cursor-pointer w-full py-3.5 px-6 rounded-xl font-semibold text-white transition-all duration-200 ${
           isBookDisabled
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]"
@@ -151,7 +153,7 @@ export default function TicketBookingSection({ ticket }) {
               <h3 className="text-lg font-bold text-gray-900">Book Tickets</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                className="cursor-pointer text-gray-400 hover:text-gray-600 text-2xl leading-none"
               >
                 ×
               </button>
@@ -213,14 +215,14 @@ export default function TicketBookingSection({ ticket }) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-2.5 px-4 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+                  className="cursor-pointer flex-1 py-2.5 px-4 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-2.5 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                  className="cursor-pointer flex-1 py-2.5 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Booking..." : "Confirm Booking"}
                 </button>

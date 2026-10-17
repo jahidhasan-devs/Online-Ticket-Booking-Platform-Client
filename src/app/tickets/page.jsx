@@ -6,6 +6,11 @@ const TicketPage = async ({ searchParams }) => {
   const { search } = await searchParams;
   const Tickets = await getAllTicket(search);
 
+  // Only approved tickets
+  const approvedTickets = Tickets.filter(
+    (ticket) => ticket.status === "approved",
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
@@ -18,19 +23,20 @@ const TicketPage = async ({ searchParams }) => {
 
       {search && (
         <h2>
-          Found {Tickets.length} Products with the search term <b>{search}</b>
+          Found {approvedTickets.length} Products with the search term{" "}
+          <b>{search}</b>
         </h2>
       )}
 
-      {Tickets && Tickets.length > 0 ? (
+      {approvedTickets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {Tickets.map((ticket) => (
+          {approvedTickets.map((ticket) => (
             <TicketCard key={ticket._id} ticket={ticket} />
           ))}
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No products found.</p>
+          <p className="text-gray-500 text-lg">No approved tickets found.</p>
         </div>
       )}
     </div>
