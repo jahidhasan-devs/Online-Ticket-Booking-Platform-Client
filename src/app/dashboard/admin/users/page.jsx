@@ -1,363 +1,264 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import {
   getAllUsers,
-  markVendorAsFraud,
   updateUserRole,
+  markVendorAsFraud,
 } from "@/lib/action/user";
-import { authClient } from "@/lib/auth-client";
-import { useEffect, useMemo, useState } from "react";
 
-export default function ManageUsersPage() {
-  const { data: session } = authClient.useSession();
-  const currentUserId = session?.user?.id;
-
+const Page = () => {
   const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const loadUsers = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getAllUsers();
-      setUsers(Array.isArray(data) ? data : data.users || []);
-    } catch (err) {
-      setError(err.message || "Failed to load users");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadUsers();
+    const fetchUsers = async () => {
+      try {
+        const data = await getAllUsers();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err.message || "Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
-  const filteredUsers = useMemo(() => {
-    const keyword = search.toLowerCase().trim();
+  const handleUpdate = async (user, action) => {
+    const id = String(user._id);
 
-    return users.filter((user) =>
-      [user.name, user.email, user.role].some((value) =>
-        (value || "").toLowerCase().includes(keyword),
-      ),
-    );
-  }, [users, search]);
-
-  const handleRoleChange = async (user, role) => {
-    if (
-      loadingId ||
-      String(user._id) === String(currentUserId) ||
-      user.role === role ||
-      user.isFraud
-    ) {
-      return;
-    }
-
-    if (
-      role === "admin" &&
-      !window.confirm(`Make ${user.name || user.email} an admin?`)
-    ) {
-      return;
-    }
-
-    try {
-      setLoadingId(String(user._id));
-      setError("");
-      setSuccess("");
-
-      await updateUserRole(user._id, role);
-
-      setUsers((previous) =>
-        previous.map((item) =>
-          String(item._id) === String(user._id) ? { ...item, role } : item,
-        ),
-      );
-
-      setSuccess(`Role changed to ${role} successfully.`);
-    } catch (err) {
-      setError(err.message || "Role update failed");
-    } finally {
-      setLoadingId("");
-    }
-  };
-
-  const handleFraud = async (user) => {
-    if (loadingId || user.role !== "vendor" || user.isFraud) {
-      return;
-    }
+    if (loadingId) return;
+    if (action === "fraud" && user.role !== "vendor") return;
+    if (action === "fraud" && user.isFraud) return;
+    if (action === user.role) return;
 
     const confirmed = window.confirm(
-      `Mark ${user.name || user.email} as a fraud vendor?`,
+      action === "fraud"
+        ? `Mark ${user.name || user.email} as a fraud vendor?`
+        : `Change ${user.name || user.email}'s role to ${action}?`,
     );
 
     if (!confirmed) return;
 
-    try {
-      setLoadingId(String(user._id));
-      setError("");
-      setSuccess("");
+    setLoadingId(id);
+    setError("");
+    setSuccess("");
 
-      await markVendorAsFraud(user._id);
+    try {
+      if (action === "fraud") {
+        await markVendorAsFraud(id);
+      } else {
+        await updateUserRole(id, action);
+      }
 
       setUsers((previous) =>
-        previous.map((item) =>
-          String(item._id) === String(user._id)
-            ? { ...item, isFraud: true }
-            : item,
-        ),
+        previous.map((item) => {
+          if (String(item._id) !== id) return item;
+
+          if (action === "fraud") {
+            return { ...item, isFraud: true };
+          }
+
+          return { ...item, role: action };
+        }),
       );
 
-      setSuccess("Vendor marked as fraud successfully.");
+      setSuccess(
+        action === "fraud"
+          ? "Vendor marked as fraud successfully."
+          : `Role updated to ${action} successfully.`,
+      );
     } catch (err) {
-      setError(err.message || "Failed to mark vendor as fraud");
+      setError(err.message || "Failed to update user");
     } finally {
       setLoadingId("");
     }
   };
 
   const admins = users.filter((user) => user.role === "admin").length;
-
   const vendors = users.filter((user) => user.role === "vendor").length;
+  const frauds = users.filter((user) => user.isFraud === true).length;
 
-  const fraudVendors = users.filter(
-    (user) => user.role === "vendor" && user.isFraud,
-  ).length;
-
-  const roleStyle = (role) => {
-    if (role === "admin") {
-      return "bg-black text-white dark:bg-white dark:text-black";
-    }
-
-    if (role === "vendor") {
-      return "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100";
-    }
-
-    return "border border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-300";
-  };
+  if (loading) {
+    return (
+      <div className="flex min-h-60 items-center justify-center">
+        <p className="text-gray-500">Loading users...</p>
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 text-gray-900 dark:bg-black dark:text-white sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <p className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-            ADMIN DASHBOARD / USERS
-          </p>
-
-          <h1 className="text-3xl font-bold sm:text-4xl">Manage Users</h1>
-
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Manage user roles and control vendor accounts.
+          <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Manage user roles and vendor fraud status.
           </p>
         </div>
 
-        {/* Summary cards */}
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Total Users", value: users.length },
-            { label: "Administrators", value: admins },
-            { label: "Vendors", value: vendors },
-            { label: "Fraud Vendors", value: fraudVendors },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-950"
-            >
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {item.label}
-              </p>
-
-              <p className="mt-3 text-3xl font-bold">
-                {loading ? "—" : item.value}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Users table */}
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
-          <div className="flex flex-col gap-4 border-b border-gray-200 p-5 dark:border-gray-800 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold">All Users</h2>
-
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {filteredUsers.length} user(s) found
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search name, email, role..."
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-black dark:border-gray-700 dark:bg-black dark:focus:border-white sm:w-72"
-              />
-
-              <button
-                onClick={loadUsers}
-                disabled={loading || Boolean(loadingId)}
-                className="cursor-pointer rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-900"
-              >
-                Refresh
-              </button>
-            </div>
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Total Users</p>
+            <p className="mt-2 text-3xl font-bold text-gray-900">
+              {users.length}
+            </p>
           </div>
 
-          {error && (
-            <div
-              role="alert"
-              className="mx-5 mt-5 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-            >
-              {error}
-            </div>
-          )}
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Admins</p>
+            <p className="mt-2 text-3xl font-bold text-blue-600">{admins}</p>
+          </div>
 
-          {success && (
-            <div
-              role="status"
-              className="mx-5 mt-5 rounded-xl border border-gray-300 bg-gray-50 p-3 text-sm dark:border-gray-700 dark:bg-gray-900"
-            >
-              {success}
-            </div>
-          )}
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Vendors</p>
+            <p className="mt-2 text-3xl font-bold text-purple-600">{vendors}</p>
+          </div>
+
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Fraud Vendors</p>
+            <p className="mt-2 text-3xl font-bold text-red-600">{frauds}</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+            {success}
+          </div>
+        )}
+
+        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b p-5">
+            <h2 className="text-lg font-semibold text-gray-900">All Users</h2>
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+              {users.length} users
+            </span>
+          </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] text-left text-sm">
-              <thead className="bg-gray-100 text-xs uppercase tracking-wider text-gray-600 dark:bg-gray-900 dark:text-gray-400">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead className="bg-gray-100 text-gray-600">
                 <tr>
-                  <th className="px-6 py-4">#</th>
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Actions</th>
+                  <th className="px-5 py-4 font-semibold">#</th>
+                  <th className="px-5 py-4 font-semibold">Name</th>
+                  <th className="px-5 py-4 font-semibold">Email</th>
+                  <th className="px-5 py-4 font-semibold">Role</th>
+                  <th className="px-5 py-4 font-semibold">Fraud Status</th>
+                  <th className="px-5 py-4 font-semibold">Actions</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                {loading ? (
+              <tbody className="divide-y divide-gray-100">
+                {users.map((user, index) => {
+                  const id = String(user._id);
+                  const isFraud = user.isFraud === true;
+                  const isLoading = loadingId === id;
+
+                  return (
+                    <tr key={id} className="transition hover:bg-gray-50">
+                      <td className="px-5 py-4 text-gray-500">{index + 1}</td>
+
+                      <td className="px-5 py-4 font-medium text-gray-900">
+                        {user.name || "Unnamed User"}
+                      </td>
+
+                      <td className="px-5 py-4 text-gray-600">
+                        {user.email || "No email"}
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            user.role === "admin"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-purple-100 text-purple-700"
+                          }`}
+                        >
+                          {user.role || "user"}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            isFraud
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
+                        >
+                          {isFraud ? "Fraud" : "Normal"}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => handleUpdate(user, "admin")}
+                            disabled={
+                              Boolean(loadingId) || user.role === "admin"
+                            }
+                            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {isLoading ? "Updating..." : "Make Admin"}
+                          </button>
+
+                          <button
+                            onClick={() => handleUpdate(user, "vendor")}
+                            disabled={
+                              Boolean(loadingId) || user.role === "vendor"
+                            }
+                            className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Make Vendor
+                          </button>
+
+                          {user.role === "vendor" && (
+                            <button
+                              onClick={() => handleUpdate(user, "fraud")}
+                              disabled={Boolean(loadingId) || isFraud}
+                              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              {isLoading
+                                ? "Updating..."
+                                : isFraud
+                                  ? "Marked as Fraud"
+                                  : "Mark as Fraud"}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {users.length === 0 && (
                   <tr>
                     <td
-                      colSpan={5}
-                      className="px-6 py-16 text-center text-gray-500"
-                    >
-                      Loading users...
-                    </td>
-                  </tr>
-                ) : filteredUsers.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-16 text-center text-gray-500"
+                      colSpan={6}
+                      className="px-5 py-12 text-center text-gray-500"
                     >
                       No users found.
                     </td>
                   </tr>
-                ) : (
-                  filteredUsers.map((user, index) => {
-                    const role = user.role || "buyer";
-                    const isFraud = user.isFraud === true;
-                    const isBusy = loadingId === String(user._id);
-
-                    // Current logged-in admin's own account
-                    const isOwnAccount =
-                      Boolean(currentUserId) &&
-                      String(user._id) === String(currentUserId);
-
-                    const roleButtonDisabled =
-                      Boolean(loadingId) || isOwnAccount || isFraud;
-
-                    return (
-                      <tr
-                        key={String(user._id)}
-                        className="transition hover:bg-gray-50 dark:hover:bg-gray-900/60"
-                      >
-                        <td className="px-6 py-5 text-gray-500">{index + 1}</td>
-
-                        <td className="px-6 py-5">
-                          <p className="font-semibold">
-                            {user.name || "Unnamed User"}
-                            {isOwnAccount && (
-                              <span className="ml-2 text-xs font-normal text-gray-500">
-                                (You)
-                              </span>
-                            )}
-                          </p>
-
-                          {isFraud && (
-                            <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
-                              Fraud vendor
-                            </p>
-                          )}
-                        </td>
-
-                        <td className="px-6 py-5 text-gray-600 dark:text-gray-300">
-                          {user.email}
-                        </td>
-
-                        <td className="px-6 py-5">
-                          <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${roleStyle(role)}`}
-                          >
-                            {role}
-                          </span>
-                        </td>
-
-                        <td className="px-6 py-5">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={() => handleRoleChange(user, "admin")}
-                              disabled={roleButtonDisabled || role === "admin"}
-                              title={
-                                isOwnAccount
-                                  ? "You cannot change your own role"
-                                  : "Make Admin"
-                              }
-                              className="cursor-pointer rounded-lg bg-black px-3 py-2 text-xs font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-                            >
-                              {isBusy ? "Updating..." : "Make Admin"}
-                            </button>
-
-                            <button
-                              onClick={() => handleRoleChange(user, "vendor")}
-                              disabled={roleButtonDisabled || role === "vendor"}
-                              title={
-                                isOwnAccount
-                                  ? "You cannot change your own role"
-                                  : "Make Vendor"
-                              }
-                              className="cursor-pointer rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-900"
-                            >
-                              Make Vendor
-                            </button>
-
-                            {role === "vendor" && (
-                              <button
-                                onClick={() => handleFraud(user)}
-                                disabled={Boolean(loadingId) || isFraud}
-                                className="cursor-pointer rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
-                              >
-                                {isFraud ? "Marked as Fraud" : "Mark as Fraud"}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
                 )}
               </tbody>
             </table>
           </div>
-
-          <div className="border-t border-gray-200 px-5 py-4 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400">
-            Only authorized administrators can manage user roles.
-          </div>
-        </section>
+        </div>
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default Page;

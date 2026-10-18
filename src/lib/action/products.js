@@ -3,22 +3,47 @@ import { getTokenServer } from "../getTokenServer";
 
 const baseURl = process.env.NEXT_PUBLIC_SERVER_URL;
 
+
+
 export const addTicket = async (ticketPayload) => {
-  const token = await getTokenServer();
+  try {
+    const token = await getTokenServer();
 
-  const res = await fetch(`${baseURl}/vendor/tickets`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${token}`,
-    },
+    const res = await fetch(`${baseURl}/vendor/tickets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(ticketPayload),
+    });
 
-    body: JSON.stringify(ticketPayload),
-  });
+    const data = await res.json();
 
-  const data = await res.json();
-  return data;
+    // Backend error হলে error object return করবে
+    // ইচ্ছাকৃত rejection-এর জন্য throw করবে না
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data.message || "Failed to create ticket.",
+        status: res.status,
+      };
+    }
+
+    return {
+      success: true,
+      ...data,
+    };
+  } catch (error) {
+    console.error("Add ticket request failed:", error);
+
+    return {
+      success: false,
+      message: "Unable to connect to the server. Please try again.",
+    };
+  }
 };
+
 
 
 

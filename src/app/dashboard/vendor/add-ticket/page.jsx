@@ -128,73 +128,104 @@ export default function AddTicketForm({ user }) {
   };
 
   // Submit Handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setStatusMessage(null);
+ 
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      let finalImageUrl = TRANSPORT_CONFIG[transportType]?.fallbackImg;
+  setIsSubmitting(true);
+  setStatusMessage(null);
 
-      // Upload image to ImgBB if a file is attached
-      if (imageFile) {
-        try {
-          const uploaded = await imageUpload(imageFile);
-          if (uploaded?.url) {
-            finalImageUrl = uploaded.url;
-          }
-        } catch (uploadErr) {
-          console.warn("Image upload failed, using fallback photo:", uploadErr);
+  try {
+    let finalImageUrl = TRANSPORT_CONFIG[transportType]?.fallbackImg;
+
+    // Upload image if a file is selected
+    if (imageFile) {
+      try {
+        const uploaded = await imageUpload(imageFile);
+
+        if (uploaded?.url) {
+          finalImageUrl = uploaded.url;
         }
+      } catch (uploadErr) {
+        console.warn("Image upload failed, using fallback image:", uploadErr);
       }
+    }
 
-      const ticketPayload = {
-        title: title.trim(),
-        fromLocation: fromLocation.trim(),
-        toLocation: toLocation.trim(),
-        transportType,
-        price: Number(price),
-        quantity: Number(quantity),
-        departureDateTime,
-        perks: selectedPerks,
-        image: finalImageUrl,
-        vendorName: user?.name || "Verified Vendor",
-        vendorEmail: user?.email || "vendor@techbazaar.com",
-        status: "pending",
-      };
+    const ticketPayload = {
+      title: title.trim(),
+      fromLocation: fromLocation.trim(),
+      toLocation: toLocation.trim(),
+      transportType,
+      price: Number(price),
+      quantity: Number(quantity),
+      departureDateTime,
+      perks: selectedPerks,
+      image: finalImageUrl,
+      vendorName: user?.name || "Verified Vendor",
+      vendorEmail: user?.email || "vendor@techbazaar.com",
+      status: "pending",
+    };
 
-      const result = await addTicket(ticketPayload);
-      console.log("Ticket created successfully:", result);
-      console.log(result);
+    const result = await addTicket(ticketPayload);
 
-      setStatusMessage({
-        type: "success",
-        text: "🎉 Ticket route created successfully! Your ticket is submitted for verification.",
-      });
-
-      // Reset form
-      setTitle("");
-      setFromLocation("");
-      setToLocation("");
-      setPrice("");
-      setQuantity("");
-      setDepartureDateTime("");
-      setSelectedPerks(["AC", "Water Bottle"]);
-      setImageFile(null);
-      setLocalImagePreview("");
-
-      // Smooth scroll to top of window to show notification
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      console.error("Error creating ticket:", err);
+    // Backend error: ticket add হয়নি
+    if (!result?.success) {
       setStatusMessage({
         type: "error",
-        text: "❌ Failed to create ticket. Please check connection and try again.",
+        text:
+          result?.status === 403
+            ? `⚠️ Your vendor account has been restricted due to a policy violation.
+               You cannot create new tickets. Please contact support if you believe this is a mistake.`
+            : `❌ ${result?.message || "Failed to create ticket. Please try again."}`,
       });
-    } finally {
-      setIsSubmitting(false);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
     }
-  };
+
+    // Success message only when ticket is created
+    setStatusMessage({
+      type: "success",
+      text: "🎉 Ticket created successfully! Your ticket has been submitted for verification.",
+    });
+
+    // Reset form only after success
+    setTitle("");
+    setFromLocation("");
+    setToLocation("");
+    setPrice("");
+    setQuantity("");
+    setDepartureDateTime("");
+    setSelectedPerks(["AC", "Water Bottle"]);
+    setImageFile(null);
+    setLocalImagePreview("");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  } catch (err) {
+    // Unexpected frontend errors
+    console.error("Unexpected ticket creation error:", err);
+
+    setStatusMessage({
+      type: "error",
+      text: "❌ Something went wrong. Please try again.",
+    });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const activeConfig = TRANSPORT_CONFIG[transportType] || TRANSPORT_CONFIG.Bus;
   const SelectedTransportIcon = activeConfig.icon;

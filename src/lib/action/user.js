@@ -1,17 +1,16 @@
 "use server";
+
 import { getTokenServer } from "@/lib/getTokenServer";
+
 const API_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
-// সব user fetch
+// Get all users
 export const getAllUsers = async () => {
   const token = await getTokenServer();
 
-  if (!token) {
-    throw new Error("Unauthorized. Please login again.");
-  }
+  if (!token) throw new Error("Please login again.");
 
   const response = await fetch(`${API_URL}/admin/users`, {
-    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -21,22 +20,17 @@ export const getAllUsers = async () => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || data.msg || "Failed to fetch users");
+    throw new Error(data.message || "Failed to fetch users");
   }
 
   return data;
 };
 
-
-
-
-// Role update
+// Same route for Admin, Vendor and Fraud
 export const updateUserRole = async (userId, role) => {
   const token = await getTokenServer();
 
-  if (!token) {
-    throw new Error("Unauthorized. Please login again.");
-  }
+  if (!token) throw new Error("Please login again.");
 
   const response = await fetch(`${API_URL}/admin/users/${userId}/role`, {
     method: "PATCH",
@@ -51,37 +45,13 @@ export const updateUserRole = async (userId, role) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || data.msg || "Failed to update role");
+    throw new Error(data.message || data.msg || "Failed to update user");
   }
 
   return data;
 };
 
-// Mark vendor as fraud
+// Fraud action also uses the same route
 export const markVendorAsFraud = async (userId) => {
-  const token = await getTokenServer();
-
-  if (!token) {
-    throw new Error("Unauthorized. Please login again.");
-  }
-
-  const response = await fetch(`${API_URL}/admin/users/${userId}/fraud`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ isFraud: true }),
-    cache: "no-store",
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.message || data.msg || "Failed to mark vendor as fraud",
-    );
-  }
-
-  return data;
+  return updateUserRole(userId, "fraud");
 };

@@ -15,11 +15,12 @@ import {
   TextField,
 } from "@heroui/react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
 
 export default function SignUpPage() {
+  const router=useRouter()
   const onSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -37,7 +38,7 @@ export default function SignUpPage() {
       }
 
       alert("Successfully signed up!");
-      redirect("/");
+      router.push("/");
     } catch (err) {
       alert("Something went wrong. Please try again.");
     }
@@ -123,7 +124,7 @@ export default function SignUpPage() {
                           User (Ticket Buyer)
                           <ListBox.ItemIndicator />
                         </ListBox.Item>
-                        <ListBox.Item id="seller" textValue="seller">
+                        <ListBox.Item id="vendor" textValue="vendor">
                           Vendor (Organizer/Seller)
                           <ListBox.ItemIndicator />
                         </ListBox.Item>
