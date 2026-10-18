@@ -29,7 +29,20 @@ export const getAllTicket = async (search) => {
 };
 
 
+export const getAdvertisedTickets = async () => {
+  try {
+    const res = await fetch(`${baseURl}/advertised-tickets`, {
+      cache: "no-store",
+    });
 
+    if (!res.ok) return [];
+
+    return await res.json();
+  } catch (error) {
+    console.error("Get advertised tickets error:", error);
+    return [];
+  }
+};
 
 export const getTicketById = async (id) => {
   const res = await fetch(`${baseURl}/product/${id}`);

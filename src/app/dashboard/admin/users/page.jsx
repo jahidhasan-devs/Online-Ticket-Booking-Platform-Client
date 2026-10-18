@@ -208,7 +208,7 @@ const Page = () => {
                             disabled={
                               Boolean(loadingId) || user.role === "admin"
                             }
-                            className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="cursor-pointer rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             {isLoading ? "Updating..." : "Make Admin"}
                           </button>
@@ -218,7 +218,7 @@ const Page = () => {
                             disabled={
                               Boolean(loadingId) || user.role === "vendor"
                             }
-                            className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="cursor-pointer rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             Make Vendor
                           </button>
@@ -227,7 +227,7 @@ const Page = () => {
                             <button
                               onClick={() => handleUpdate(user, "fraud")}
                               disabled={Boolean(loadingId) || isFraud}
-                              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="cursor-pointer rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               {isLoading
                                 ? "Updating..."
