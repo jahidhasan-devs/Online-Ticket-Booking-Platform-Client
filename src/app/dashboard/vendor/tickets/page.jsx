@@ -1,44 +1,26 @@
-import React from 'react';
+import MyTicketsGrid from "@/components/MyTicketGrid";
+import { getMyTickets } from "@/lib/action/myaction";
 
-const page = () => {
-    return (
-      <div>
-        <p>tickets all ticket show hobe</p>
+const Page = async () => {
+  const tickets = await getMyTickets();
+
+  return (
+    <div className="min-h-screen bg-white p-4 transition-colors dark:bg-black md:p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 border-b border-gray-200 pb-5 dark:border-neutral-800">
+          <h1 className="mb-2 text-2xl font-bold text-black dark:text-white md:text-3xl">
+            My Tickets
+          </h1>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 md:text-base">
+            Manage all tickets added by you.
+          </p>
+        </div>
+
+        <MyTicketsGrid tickets={Array.isArray(tickets) ? tickets : []} />
       </div>
-    );
+    </div>
+  );
 };
 
-export default page;
-
-
-
-
-
-
-// import React from "react";
-// import ProductTable from "./ProductTable";
-
-// import { getProduct } from "@/lib/api/product";
-// import AddProductModal from "@/components/dashboard/seller/AddProductModal";
-
-
-// const SellerProductPage = async ({searchParams}) => {
-//   const params = await searchParams;
-//   // console.log(params)
-//   const products = await getProduct(params.page)
-//   console.log(products);
-
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center">
-//         <h1 className="text-3xl font-bold">Products</h1>
-//         <AddProductModal />
-//       </div>
-//       <ProductTable productsData={products}/>
-
-//     </div>
-//   );
-// };
-
-// export default SellerProductPage;
+export default Page;
