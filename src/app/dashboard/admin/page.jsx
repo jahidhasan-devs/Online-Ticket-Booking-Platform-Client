@@ -23,13 +23,11 @@ export default async function AdminProfilePage() {
   });
 
   const user = session?.user;
-  // console.log("For verification check",user);
 
   if (!user) {
     redirect("/login");
   }
 
-  // Protect this page from non-admin users.
   if (user.role !== "admin") {
     redirect("/");
   }
@@ -57,7 +55,7 @@ export default async function AdminProfilePage() {
     },
     {
       label: "Email Verification",
-      value: user.emailVerified ? "Email Not Verified" : "Email Verified",
+      value: user.emailVerified ? "Email Verified" : "Email Not Verified",
       icon: LockKeyhole,
     },
     {
@@ -74,12 +72,15 @@ export default async function AdminProfilePage() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8 bg-white p-4 text-gray-900 transition-colors duration-300 dark:bg-neutral-950 dark:text-white sm:p-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 dark:border-neutral-800 pb-6">
+      <div className="flex flex-col gap-4 border-b border-gray-200 pb-6 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Profile</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Admin Profile
+          </h1>
+
+          <p className="mt-2 text-sm text-gray-500 dark:text-neutral-400">
             View your administrator account and personal information.
           </p>
         </div>
@@ -89,15 +90,15 @@ export default async function AdminProfilePage() {
           variant="secondary"
           className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
         >
-          <ShieldCheck className="w-4 h-4 mr-1" />
+          <ShieldCheck className="mr-1 h-4 w-4" />
           Administrator
         </Chip>
       </div>
 
       {/* Admin Profile Card */}
-      <Card className="p-6 sm:p-8 bg-gradient-to-r from-blue-50/70 to-indigo-50/70 dark:from-neutral-900 dark:to-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm">
+      <Card className="rounded-xl border border-gray-200 bg-gradient-to-r from-blue-50/70 to-indigo-50/70 p-6 shadow-sm transition-colors duration-300 dark:border-neutral-800 dark:from-neutral-900 dark:to-neutral-900 sm:p-8">
         <Card.Content className="p-0">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
             <Avatar size="lg">
               <Avatar.Image
                 src={user.image || undefined}
@@ -109,16 +110,16 @@ export default async function AdminProfilePage() {
               </Avatar.Fallback>
             </Avatar>
 
-            <div className="text-center sm:text-left space-y-3">
-              <h2 className="text-2xl font-bold">
+            <div className="space-y-3 text-center sm:text-left">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {user.name || "Admin Name"}
               </h2>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-neutral-400">
                 {user.email}
               </p>
 
-              <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+              <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
                 <Chip size="sm" variant="primary">
                   {user.role}
                 </Chip>
@@ -132,7 +133,7 @@ export default async function AdminProfilePage() {
                       : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                   }
                 >
-                  {user.emailVerified ? "Email Not Verified" : "Email Verified"}
+                  {user.emailVerified ? "Email Verified" : "Email Not Verified"}
                 </Chip>
               </div>
             </div>
@@ -140,36 +141,40 @@ export default async function AdminProfilePage() {
         </Card.Content>
       </Card>
 
-      {/* Admin Information */}
-      <Card className="p-6 border border-gray-200 dark:border-neutral-800 shadow-sm rounded-xl">
-        <Card.Header className="px-0 pt-0 pb-5">
+      {/* Administrator Information */}
+      <Card className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-sm transition-colors duration-300 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white sm:p-6">
+        <Card.Header className="px-0 pb-5 pt-0">
           <div>
-            <h3 className="text-xl font-semibold">Administrator Information</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Administrator Information
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
               Your registered account details.
             </p>
           </div>
         </Card.Header>
 
         <Card.Content className="p-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {profileItems.map((item) => {
               const Icon = item.icon;
 
               return (
                 <div
                   key={item.label}
-                  className="flex items-start gap-4 p-4 rounded-lg border border-gray-100 dark:border-neutral-800"
+                  className="flex items-start gap-4 rounded-lg border border-gray-200 bg-gray-50/50 p-4 transition-colors dark:border-neutral-800 dark:bg-neutral-900/50"
                 >
-                  <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
-                    <Icon className="w-5 h-5" />
+                  <div className="rounded-lg bg-blue-50 p-3 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                    <Icon className="h-5 w-5" />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-neutral-400">
                       {item.label}
                     </p>
-                    <p className="font-medium mt-1 break-words">{item.value}</p>
+                    <p className="mt-1 break-words font-medium text-gray-900 dark:text-white">
+                      {item.value}
+                    </p>
                   </div>
                 </div>
               );
@@ -179,16 +184,19 @@ export default async function AdminProfilePage() {
       </Card>
 
       {/* Admin Access Information */}
-      <Card className="p-6 border border-gray-200 dark:border-neutral-800 shadow-sm rounded-xl">
+      <Card className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-sm transition-colors duration-300 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white sm:p-6">
         <Card.Content className="p-0">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
-              <Settings className="w-6 h-6" />
+            <div className="rounded-lg bg-purple-50 p-3 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
+              <Settings className="h-6 w-6" />
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg">Admin Access</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Admin Access
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                 Your administrator account provides access to authorized
                 management features according to your assigned permissions.
               </p>

@@ -18,15 +18,46 @@ export const getProduct = async (page) => {
   return data;
 };
 
+export const getAllTicket = async (queryParams = {}) => {
+  const {
+    search = "",
+    from = "",
+    to = "",
+    transportType = "",
+    sort = "",
+    status = "",
+    page = 1,
+    limit = 8,
+  } = queryParams;
 
+  const params = new URLSearchParams();
 
+  if (search) params.append("search", search);
+  if (from) params.append("from", from);
+  if (to) params.append("to", to);
+  if (transportType && transportType !== "all")
+    params.append("transportType", transportType);
+  if (sort) params.append("sort", sort);
+  if (status) params.append("status", status); // Status পাঠালে ব্যাকএন্ড ফিল্টার করবে
+  if (page) params.append("page", page);
+  if (limit) params.append("limit", limit);
 
-export const getAllTicket = async (search) => {
-  const res = await fetch(`${baseURl}/products?search=${search}`);
+  const res = await fetch(`${baseURl}/products?${params.toString()}`, {
+    cache: "no-store",
+  });
+
   const data = await res.json();
-
   return data;
 };
+
+
+
+// export const getAllTicket = async (search) => {
+//   const res = await fetch(`${baseURl}/products?search=${search}`);
+//   const data = await res.json();
+
+//   return data;
+// };
 
 
 export const getAdvertisedTickets = async () => {
