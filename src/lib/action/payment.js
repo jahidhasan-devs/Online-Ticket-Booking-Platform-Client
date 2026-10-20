@@ -17,3 +17,19 @@ export const subscription = async (data) => {
 
 
 
+
+export const payment = async (data) => {
+  const res = await fetch(`${baseURl}/payment`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const resData = await res.json();
+  return resData;
+};
+
+
+

@@ -156,14 +156,21 @@ const MyBookingsPage = () => {
                     )}
                   </div>
 
-                  {/* Pay Now Button */}
+                  {/* Stribe Pay Now Button */}
                   {showPayButton && (
-                    <button
-                      onClick={() => handlePayNow(booking)}
-                      className="w-full mt-2 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                    >
-                      Pay Now (৳{booking.totalPrice})
-                    </button>
+                    <form action={`api/payment`} method="POST">
+                      <input value={booking.price} name="price" />
+                      <input value={booking.title} name="title" />
+                      <input value={booking.id} name="productId" />
+
+                      <button
+                        type="submit"
+                        onClick={() => handlePayNow(booking)}
+                        className="cursor-pointer w-full mt-2 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                      >
+                        Pay Now (৳{booking.totalPrice})
+                      </button>
+                    </form>
                   )}
 
                   {/* Time Expired Message */}

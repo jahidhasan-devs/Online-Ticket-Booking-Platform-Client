@@ -105,7 +105,9 @@ const RequestedBookingsPage = () => {
                       <button
                         onClick={() => handleAccept(booking._id)}
                         disabled={actionLoading === booking._id + "-accept"}
-                        className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50"
+                        className="cursor-pointer px-3 py-1.5 bg-green-600
+                         text-white rounded-lg text-sm hover:bg-green-700 
+                         disabled:opacity-50"
                       >
                         {actionLoading === booking._id + "-accept"
                           ? "Accepting..."
@@ -115,7 +117,9 @@ const RequestedBookingsPage = () => {
                       <button
                         onClick={() => handleReject(booking._id)}
                         disabled={actionLoading === booking._id + "-reject"}
-                        className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50"
+                        className="cursor-pointer px-3 py-1.5 bg-red-600
+                         text-white rounded-lg text-sm hover:bg-red-700 
+                         disabled:opacity-50"
                       >
                         {actionLoading === booking._id + "-reject"
                           ? "Rejecting..."
