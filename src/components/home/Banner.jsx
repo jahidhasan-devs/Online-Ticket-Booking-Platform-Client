@@ -11,9 +11,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const banners = [
   "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1400&q=80", // Train
   "https://images.pexels.com/photos/9244269/pexels-photo-9244269.jpeg?auto=compress&cs=tinysrgb&w=1400", // Launch / Ferry
-  "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=1400q=80", // Luxury Bus
+  "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&q=80", // Luxury Bus
   "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80", // Airplane
-  "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=1400&q=80", // Highway Bus
+  "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80", // Highway Bus
   "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80", // Night Bus
 ];
 
