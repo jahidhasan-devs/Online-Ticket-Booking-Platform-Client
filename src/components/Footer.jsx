@@ -22,7 +22,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="inline-block">
               <Image
-                src="/logo-xl.png"
+                src="/logo.png"
                 alt="TicketBari Logo"
                 width={180}
                 height={50}
@@ -90,7 +90,7 @@ export default function Footer() {
 
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0" />
-                <span>+880 1234-567890</span>
+                <span>+880 12xxxxx890</span>
               </div>
 
               <div className="flex items-center gap-3">

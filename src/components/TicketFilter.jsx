@@ -21,15 +21,17 @@ const TicketFilter = () => {
 
     const params = new URLSearchParams(searchParams.toString());
 
-    if (from) params.set("from", from);
+    if (from.trim()) params.set("from", from.trim());
     else params.delete("from");
 
-    if (to) params.set("to", to);
+    if (to.trim()) params.set("to", to.trim());
     else params.delete("to");
 
-    if (transportType && transportType !== "all")
+    if (transportType !== "all") {
       params.set("transportType", transportType);
-    else params.delete("transportType");
+    } else {
+      params.delete("transportType");
+    }
 
     if (sort) params.set("sort", sort);
     else params.delete("sort");
@@ -47,6 +49,12 @@ const TicketFilter = () => {
     router.push(pathname);
   };
 
+  const inputClassName =
+    "bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white rounded-xl";
+
+  const selectClassName =
+    "h-10 w-full px-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white text-sm outline-none hover:border-zinc-400 dark:hover:border-zinc-500 focus:border-black dark:focus:border-white transition-all cursor-pointer";
+
   return (
     <form
       onSubmit={handleFilter}
@@ -60,14 +68,8 @@ const TicketFilter = () => {
           value={from}
           onChange={(e) => setFrom(e.target.value)}
           size="sm"
-          classNames={{
-            inputWrapper:
-              "bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 focus-within:!border-black dark:focus-within:!border-white rounded-xl transition-all",
-            label:
-              "text-zinc-700 dark:text-zinc-300 font-semibold tracking-wide text-xs mb-1",
-            input:
-              "text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-sm",
-          }}
+          variant="bordered"
+          className={inputClassName}
         />
 
         {/* To Location */}
@@ -77,87 +79,43 @@ const TicketFilter = () => {
           value={to}
           onChange={(e) => setTo(e.target.value)}
           size="sm"
-          classNames={{
-            inputWrapper:
-              "bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 focus-within:!border-black dark:focus-within:!border-white rounded-xl transition-all",
-            label:
-              "text-zinc-700 dark:text-zinc-300 font-semibold tracking-wide text-xs mb-1",
-            input:
-              "text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-sm",
-          }}
+          variant="bordered"
+          className={inputClassName}
         />
 
-        {/* Transport Type Select */}
+        {/* Transport Type */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 tracking-wide">
             Transport Type
           </label>
+
           <select
             value={transportType}
             onChange={(e) => setTransportType(e.target.value)}
-            className="h-10 px-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white text-sm outline-none hover:border-zinc-400 dark:hover:border-zinc-500 focus:border-black dark:focus:border-white transition-all cursor-pointer"
+            className={selectClassName}
           >
-            <option
-              value="all"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              All Transports
-            </option>
-            <option
-              value="Bus"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Bus
-            </option>
-            <option
-              value="Train"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Train
-            </option>
-            <option
-              value="Flight"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Flight
-            </option>
-            <option
-              value="Launch"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Launch
-            </option>
+            <option value="all">All Transports</option>
+            <option value="Bus">Bus</option>
+            <option value="Train">Train</option>
+            <option value="Flight">Flight</option>
+            <option value="Launch">Launch</option>
           </select>
         </div>
 
-        {/* Sort by Price Select */}
+        {/* Sort by Price */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 tracking-wide">
             Sort by Price
           </label>
+
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="h-10 px-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-white text-sm outline-none hover:border-zinc-400 dark:hover:border-zinc-500 focus:border-black dark:focus:border-white transition-all cursor-pointer"
+            className={selectClassName}
           >
-            <option
-              value=""
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Default
-            </option>
-            <option
-              value="lowToHigh"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Price: Low to High
-            </option>
-            <option
-              value="highToLow"
-              className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-            >
-              Price: High to Low
-            </option>
+            <option value="">Default</option>
+            <option value="lowToHigh">Price: Low to High</option>
+            <option value="highToLow">Price: High to Low</option>
           </select>
         </div>
       </div>
@@ -167,11 +125,12 @@ const TicketFilter = () => {
         <Button
           size="sm"
           type="button"
-          onClick={handleReset}
+          onPress={handleReset}
           className="bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl px-5 font-medium transition-all"
         >
           Reset
         </Button>
+
         <Button
           size="sm"
           type="submit"
