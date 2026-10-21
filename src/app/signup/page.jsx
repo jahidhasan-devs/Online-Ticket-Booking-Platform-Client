@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { redirect, useRouter } from "next/navigation";
 import React from "react";
+import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
 
 export default function SignUpPage() {
@@ -37,7 +38,7 @@ export default function SignUpPage() {
         return;
       }
 
-      alert("Successfully signed up!");
+     toast.success("Successfully signed up!");
       router.push("/");
     } catch (err) {
       alert("Something went wrong. Please try again.");

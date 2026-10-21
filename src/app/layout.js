@@ -6,6 +6,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import NestThemeProvider from "@/providers/NextThemeToggle";
+import { Toaster } from "react-hot-toast";
 
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({ children }) {
 
           <Footer />
         </NestThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
