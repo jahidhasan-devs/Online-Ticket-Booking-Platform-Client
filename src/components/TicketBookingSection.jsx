@@ -1,12 +1,15 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { createBooking } from "@/lib/action/booking";
 
 export default function TicketBookingSection({ ticket }) {
   const router = useRouter();
+    // const { data: session } = authClient.useSession();
+    // const user = session?.user;
+  const { data: session, isPending } =authClient. useSession();
 
   const [timeLeft, setTimeLeft] = useState("");
   const [isExpired, setIsExpired] = useState(false);
@@ -17,22 +20,21 @@ export default function TicketBookingSection({ ticket }) {
 
   // Countdown Timer
   useEffect(() => {
-    if (!ticket.departureDateTime) {
+    if (!ticket?.departureDateTime) {
       setTimeLeft("Departure time unavailable");
       setIsExpired(true);
       return;
     }
 
     const updateCountdown = () => {
-      const now = Date.now();
       const departure = new Date(ticket.departureDateTime).getTime();
-      const difference = departure - now;
+      const difference = departure - Date.now();
 
       if (Number.isNaN(departure) || difference <= 0) {
         setTimeLeft(
           Number.isNaN(departure)
             ? "Departure time unavailable"
-            : "Departure time has passed"
+            : "Departure time has passed",
         );
         setIsExpired(true);
         return;
@@ -42,34 +44,39 @@ export default function TicketBookingSection({ ticket }) {
 
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
       const hours = Math.floor(
-        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
       );
-      const minutes = Math.floor(
-        (difference % (1000 * 60 * 60)) / (1000 * 60)
-      );
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      if (days > 0) {
-        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-      } else {
-        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-      }
+      setTimeLeft(
+        days > 0
+          ? `${days}d ${hours}h ${minutes}m ${seconds}s`
+          : `${hours}h ${minutes}m ${seconds}s`,
+      );
     };
 
     updateCountdown();
 
     const interval = setInterval(updateCountdown, 1000);
-
     return () => clearInterval(interval);
-  }, [ticket.departureDateTime]);
+  }, [ticket?.departureDateTime]);
 
   // Booking Conditions
-  const isSoldOut = Number(ticket.quantity) <= 0;
+  const availableSeats = Number(ticket?.quantity);
+  const price = Number(ticket?.price);
+  const isSoldOut = !Number.isFinite(availableSeats) || availableSeats <= 0;
   const isBookDisabled = isExpired || isSoldOut;
 
-  // Open Booking Modal
+  // Open Booking Modal or Redirect to Login
   const handleBookNow = () => {
-    if (isBookDisabled) return;
+    if (isPending || isBookDisabled) return;
+
+    if (!session?.user) {
+      const currentPath = window.location.pathname;
+      router.push(`/signin?callbackURL=${encodeURIComponent(currentPath)}`);
+      return;
+    }
 
     setBookingQty(1);
     setError("");
@@ -97,20 +104,38 @@ export default function TicketBookingSection({ ticket }) {
     e.preventDefault();
     setError("");
 
+    if (isPending) {
+      setError("Please wait while we verify your login.");
+      return;
+    }
+
+    if (!session?.user) {
+      router.push(
+        `/login?callbackURL=${encodeURIComponent(window.location.pathname)}`,
+      );
+      return;
+    }
+
     const quantity = Number(bookingQty);
-    const availableSeats = Number(ticket.quantity);
 
     if (!Number.isInteger(quantity) || quantity < 1) {
-      setError("Quantity must be at least 1");
+      setError("Quantity must be at least 1.");
       return;
     }
 
-    if (quantity > availableSeats) {
-      setError(`You can book a maximum of ${availableSeats} seats`);
+    if (!Number.isFinite(availableSeats) || quantity > availableSeats) {
+      setError(`You can book a maximum of ${availableSeats || 0} seats.`);
       return;
     }
 
-    if (isExpired) {
+    if (!Number.isFinite(price) || price < 0) {
+      setError("Invalid ticket price.");
+      return;
+    }
+
+    if (new Date(ticket.departureDateTime).getTime() <= Date.now()) {
+      setIsExpired(true);
+      setTimeLeft("Departure time has passed");
       setError("Departure time has passed. You cannot book this ticket.");
       return;
     }
@@ -130,7 +155,7 @@ export default function TicketBookingSection({ ticket }) {
       });
 
       if (!result?.success) {
-        throw new Error(result?.message || "Booking failed");
+        throw new Error(result?.message || "Booking failed.");
       }
 
       setIsModalOpen(false);
@@ -143,7 +168,7 @@ export default function TicketBookingSection({ ticket }) {
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong. Please try again."
+          : "Something went wrong. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -152,7 +177,6 @@ export default function TicketBookingSection({ ticket }) {
 
   return (
     <div className="mt-auto space-y-5">
-
       {/* Countdown */}
       <div
         className={`rounded-xl border p-5 text-center transition-colors duration-300 ${
@@ -190,17 +214,19 @@ export default function TicketBookingSection({ ticket }) {
       <button
         type="button"
         onClick={handleBookNow}
-        disabled={isBookDisabled}
-        className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold transition-all duration-200 ${
-          isBookDisabled
+        disabled={isBookDisabled || isPending}
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold transition-all duration-200 ${
+          isBookDisabled || isPending
             ? "cursor-not-allowed border border-gray-300 bg-gray-200 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
-            : "bg-black text-white hover:bg-gray-800 active:scale-[0.98] dark:bg-white dark:text-black dark:hover:bg-gray-200"
+            : "cursor-pointer bg-black text-white hover:bg-gray-800 active:scale-[0.98] dark:bg-white dark:text-black dark:hover:bg-gray-200"
         }`}
       >
         {isSoldOut ? (
           "Sold Out"
         ) : isExpired ? (
           "Departure Passed"
+        ) : isPending ? (
+          "Checking Login..."
         ) : (
           <>
             <svg
@@ -216,7 +242,6 @@ export default function TicketBookingSection({ ticket }) {
                 d="M5 12h14m-7-7l7 7-7 7"
               />
             </svg>
-
             Book Now
           </>
         )}
@@ -239,13 +264,9 @@ export default function TicketBookingSection({ ticket }) {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-gray-800">
               <div>
-                <h3
-                  id="booking-modal-title"
-                  className="text-xl font-bold"
-                >
+                <h3 id="booking-modal-title" className="text-xl font-bold">
                   Book Tickets
                 </h3>
-
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Complete your ticket booking
                 </p>
@@ -256,25 +277,20 @@ export default function TicketBookingSection({ ticket }) {
                 onClick={handleCloseModal}
                 disabled={isSubmitting}
                 aria-label="Close booking modal"
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-2xl text-gray-500 transition hover:bg-gray-100 hover:text-black disabled:cursor-not-allowed dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-2xl text-gray-500 transition hover:bg-gray-100 hover:text-black disabled:cursor-not-allowed dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-white"
               >
                 ×
               </button>
             </div>
 
             {/* Modal Body */}
-            <form
-              onSubmit={handleSubmitBooking}
-              className="space-y-5 p-6"
-            >
-              {/* Ticket Name */}
+            <form onSubmit={handleSubmitBooking} className="space-y-5 p-6">
               <div>
                 <p className="mb-1.5 text-sm text-gray-500 dark:text-gray-400">
                   Ticket
                 </p>
-
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {ticket.title}
+                  {ticket?.title}
                 </p>
               </div>
 
@@ -283,9 +299,8 @@ export default function TicketBookingSection({ ticket }) {
                 <p className="mb-1.5 text-sm text-gray-500 dark:text-gray-400">
                   Price Per Seat
                 </p>
-
                 <p className="text-xl font-bold text-black dark:text-white">
-                  ৳{ticket.price}
+                  ৳{price}
                 </p>
               </div>
 
@@ -302,7 +317,7 @@ export default function TicketBookingSection({ ticket }) {
                   id="booking-quantity"
                   type="number"
                   min={1}
-                  max={Number(ticket.quantity)}
+                  max={availableSeats}
                   step={1}
                   value={bookingQty}
                   onChange={handleQtyChange}
@@ -312,7 +327,7 @@ export default function TicketBookingSection({ ticket }) {
                 />
 
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  Available seats: {ticket.quantity}
+                  Available seats: {availableSeats}
                 </p>
               </div>
 
@@ -325,7 +340,7 @@ export default function TicketBookingSection({ ticket }) {
                 <span className="text-xl font-bold text-black dark:text-white">
                   ৳
                   {Number.isFinite(Number(bookingQty))
-                    ? Number(ticket.price) * Number(bookingQty)
+                    ? price * Number(bookingQty)
                     : 0}
                 </span>
               </div>
@@ -354,41 +369,9 @@ export default function TicketBookingSection({ ticket }) {
                 <button
                   type="submit"
                   disabled={isSubmitting || isExpired || isSoldOut}
-                  className="flex w-full cursor-pointer items-center
-                   justify-center gap-2 rounded-xl bg-black px-4 py-3 font-semibold
-                    text-white transition hover:bg-gray-800 disabled:cursor-not-allowed
-                     disabled:bg-gray-400 dark:bg-white dark:text-black
-                      dark:hover:bg-gray-200 dark:disabled:bg-gray-700
-                       dark:disabled:text-gray-400"
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-black px-4 py-3 font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400 dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:disabled:bg-gray-700 dark:disabled:text-gray-400"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <svg
-                        className="h-5 w-5 animate-spin"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-
-                      Booking...
-                    </>
-                  ) : (
-                    "Confirm Booking"
-                  )}
+                  {isSubmitting ? "Booking..." : "Confirm Booking"}
                 </button>
               </div>
             </form>

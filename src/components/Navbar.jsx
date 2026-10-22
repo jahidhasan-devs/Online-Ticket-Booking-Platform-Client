@@ -174,7 +174,7 @@ const Navbar = () => {
                       <Dropdown.Item id="profile" textValue="My Profile">
                         <Link
                           className="flex items-center gap-2 w-full text-foreground"
-                          href="/profile"
+                          href={`/dashboard/${user?.role}`}
                         >
                           <User className="h-4 w-4" />
                           <span>My Profile</span>
