@@ -1,9 +1,9 @@
-import dns from "node:dns";
-dns.setServers(["1.1.1.1", "1.0.0.1"]);
+// import dns from "node:dns";
+// dns.setServers(["1.1.1.1", "1.0.0.1"]);
 
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
-// ✅ সঠিক প্যাকেজ থেকে ইম্পোর্ট করা হয়েছে
+
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
 
