@@ -14,7 +14,7 @@ TicketBari is a modern and responsive online ticket booking platform that allows
 
 ### 🏠 Home Page
 
-![Home Page](./screenshots/home.png)
+![Home Page](./screenshorts/home.png)
 
 > *Add your project screenshots to the `screenshots` folder.*
 
